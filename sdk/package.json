@@ -1,0 +1,8 @@
+{
+  "name": "@strata-bi/solana-sdk",
+  "version": "1.0.0",
+  "description": "SDK for Solana Behavioral Intelligence API",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT"
+}
