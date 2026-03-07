@@ -142,7 +142,7 @@ This is an early-stage MVP built to demonstrate the core analysis capability. Th
 - ✅ REST API with error handling
 - ✅ JavaScript SDK
 
-Planned next milestones (see [ROADMAP](docs/ROADMAP.md)):
+Planned next milestones (see [ROADMAP](ROADMAP.md)):
 - [ ] Wallet connection + frontend demo
 - [ ] Expanded pattern library
 - [ ] Historical trend analysis
@@ -164,6 +164,12 @@ This project is applying for a **Solana Foundation Small Grant** to complete the
 - Public-facing demo interface
 - Expanded archetype and pattern coverage
 - Developer documentation
+
+---
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for detailed milestones and grant usage breakdown.
 
 ---
 
