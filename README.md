@@ -173,6 +173,12 @@ See [ROADMAP.md](ROADMAP.md) for detailed milestones and grant usage breakdown.
 
 ---
 
+## Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for system design, request flow, and analysis engine details.
+
+---
+
 ## API Documentation
 
 Full API reference: [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md)
