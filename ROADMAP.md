@@ -36,7 +36,7 @@ The core API is live and functional. Real-time wallet behavioral analysis is wor
 - [ ] Hosted public endpoint (no self-hosting required)
 - [ ] Developer onboarding documentation
 
-**This is the primary focus of the Solana Foundation Small Grant ($30k).**
+
 
 ---
 
