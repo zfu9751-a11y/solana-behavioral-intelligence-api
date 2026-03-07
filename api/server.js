@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 /**
  * Solana Behavioral Intelligence API
  * Version: v1
