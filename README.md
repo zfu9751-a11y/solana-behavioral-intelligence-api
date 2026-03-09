@@ -7,6 +7,8 @@
 [![Data: Helius](https://img.shields.io/badge/Data-Helius-orange)](https://helius.dev)
 [![Status: MVP](https://img.shields.io/badge/Status-MVP-green)]()
 
+**[→ Live Demo](https://zfu9751-a11y.github.io/solana-behavioral-intelligence-api)**
+
 ---
 
 ## The Problem
@@ -51,6 +53,14 @@ GET /api/v1/solana/wallet/:address/analysis
 ```
 
 All data is pulled in real-time from Helius and analyzed on-the-fly.
+
+---
+
+## Live Demo
+
+Try it now: **[https://zfu9751-a11y.github.io/solana-behavioral-intelligence-api](https://zfu9751-a11y.github.io/solana-behavioral-intelligence-api)**
+
+Paste any Solana wallet address to get a real-time behavioral profile — archetype classification, risk score, behavior patterns, and portfolio overview, all from live on-chain data.
 
 ---
 
@@ -141,9 +151,9 @@ This is an early-stage MVP built to demonstrate the core analysis capability. Th
 - ✅ Portfolio overview
 - ✅ REST API with error handling
 - ✅ JavaScript SDK
+- ✅ Live demo interface
 
 Planned next milestones (see [ROADMAP](ROADMAP.md)):
-- [ ] Wallet connection + frontend demo
 - [ ] Expanded pattern library
 - [ ] Historical trend analysis
 - [ ] Multi-wallet batch API
