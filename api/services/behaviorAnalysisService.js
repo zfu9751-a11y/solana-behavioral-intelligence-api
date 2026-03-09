@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 /**
  * Behavior Analysis Service
  * Solana Wallet Behavioral Analytics — powered by Helius API
