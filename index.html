@@ -451,7 +451,10 @@
   </div>
   <div class="hero-footer">
     <span>// powered by helius api</span>
-    <a href="https://github.com/zfu9751-a11y/solana-behavioral-intelligence-api" target="_blank">github →</a>
+    <div style="display:flex;gap:20px;">
+      <a href="#" onclick="showDocs();return false;">api docs →</a>
+      <a href="https://github.com/zfu9751-a11y/solana-behavioral-intelligence-api" target="_blank">github →</a>
+    </div>
   </div>
 </div>
 
@@ -473,6 +476,142 @@
   </div>
   <div class="scan-progressbar">
     <div class="scan-progressbar-fill" id="scanProgress"></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN 4: API DOCS ═══ -->
+<div class="screen hidden" id="screen-docs">
+  <div class="res-topbar">
+    <div class="res-topbar-left">
+      <span class="res-logo">STRATA<span>_</span>BI</span>
+      <span class="res-pill">API DOCS</span>
+      <span class="res-pill">v1.0</span>
+    </div>
+    <button class="new-analysis-btn" onclick="showScreen('screen-hero','screen-docs','down')">[ back ]</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:40px 48px 60px;max-width:860px;margin:0 auto;width:100%;">
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:10px;">// overview</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.9;">
+        Strata BI provides real-time behavioral intelligence for Solana wallets. Pass any wallet address and receive archetype classification, risk scoring, portfolio overview, and behavioral pattern detection — all in a single API call.
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// base url</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);padding:16px 20px;font-size:12px;color:var(--cyan);">
+        https://solana-behavioral-intelligence-api-production.up.railway.app
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// endpoint</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);padding:20px 24px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+          <span style="font-size:11px;font-weight:700;color:var(--green);border:1px solid rgba(0,255,136,0.3);padding:3px 10px;letter-spacing:0.1em;">GET</span>
+          <span style="font-size:13px;color:var(--white);">/api/v1/solana/wallet/<span style="color:var(--cyan)">{address}</span>/analysis</span>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.8;">
+          Analyze a Solana wallet address and return behavioral intelligence data.
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// path parameters</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);">
+        <div style="display:grid;grid-template-columns:140px 100px 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 20px;">
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">parameter</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">type</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">description</span>
+        </div>
+        <div style="display:grid;grid-template-columns:140px 100px 1fr;gap:0;padding:14px 20px;align-items:start;">
+          <span style="font-size:12px;color:var(--cyan);">address</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);">string</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.6);line-height:1.8;">Base58-encoded Solana wallet address (32–44 characters). Mainnet only.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// example request</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);padding:18px 20px;">
+        <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-bottom:10px;">curl</div>
+        <div style="font-size:12px;color:var(--white);word-break:break-all;line-height:1.9;">
+          curl "https://solana-behavioral-intelligence-api-production.up.railway.app/api/v1/solana/wallet/<span style="color:var(--cyan)">YOUR_WALLET_ADDRESS</span>/analysis"
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// response fields</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);">
+        <div style="display:grid;grid-template-columns:180px 100px 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 20px;">
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">field</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">type</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">description</span>
+        </div>
+        ${[
+          ['wallet_address','string','The queried Solana wallet address'],
+          ['chain','string','Always "solana"'],
+          ['version','string','API version, currently "v1"'],
+          ['archetype','string','Behavioral classification (e.g. "Diamond Hands", "Degen Trader")'],
+          ['risk_score','number','Risk score from 0–100. Higher = higher risk.'],
+          ['behavior_patterns','array','Detected on-chain behavior patterns with confidence scores'],
+          ['portfolio_overview.sol_balance','number','SOL balance at time of analysis'],
+          ['portfolio_overview.token_count','number','Number of unique token holdings'],
+          ['portfolio_overview.main_assets','array','Top token symbols held by the wallet'],
+          ['summary','string','Human-readable behavioral summary'],
+        ].map(([f,t,d]) => `
+        <div style="display:grid;grid-template-columns:180px 100px 1fr;gap:0;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.03);align-items:start;">
+          <span style="font-size:11px;color:var(--green);font-family:var(--font);">${f}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.35);padding-top:1px;">${t}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.55);line-height:1.8;">${d}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// example response</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);padding:20px 24px;font-size:11px;line-height:1.9;color:rgba(255,255,255,0.7);white-space:pre-wrap;">{
+  <span style="color:var(--cyan);">"wallet_address"</span>: <span style="color:rgba(255,200,50,0.8);">"9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"</span>,
+  <span style="color:var(--cyan);">"chain"</span>:          <span style="color:rgba(255,200,50,0.8);">"solana"</span>,
+  <span style="color:var(--cyan);">"version"</span>:        <span style="color:rgba(255,200,50,0.8);">"v1"</span>,
+  <span style="color:var(--cyan);">"archetype"</span>:      <span style="color:rgba(255,200,50,0.8);">"Diamond Hands"</span>,
+  <span style="color:var(--cyan);">"risk_score"</span>:     <span style="color:var(--green);">50</span>,
+  <span style="color:var(--cyan);">"behavior_patterns"</span>: [],
+  <span style="color:var(--cyan);">"portfolio_overview"</span>: {
+    <span style="color:var(--cyan);">"sol_balance"</span>:  <span style="color:var(--green);">13908916.30</span>,
+    <span style="color:var(--cyan);">"token_count"</span>:  <span style="color:var(--green);">2722</span>,
+    <span style="color:var(--cyan);">"main_assets"</span>:  <span style="color:rgba(255,200,50,0.8);">["SOL", "3sLmaz", "5Qbe2Z", "pumpsA", "99PENE"]</span>
+  },
+  <span style="color:var(--cyan);">"summary"</span>: <span style="color:rgba(255,200,50,0.8);">"Long-term conviction holder with 100 recent transactions..."</span>
+}</div>
+    </div>
+
+    <div style="margin-bottom:40px;">
+      <div style="font-size:10px;color:rgba(0,255,136,0.45);letter-spacing:0.28em;text-transform:uppercase;margin-bottom:16px;">// error responses</div>
+      <div style="background:#0e0e0e;border:1px solid rgba(0,255,136,0.1);">
+        <div style="display:grid;grid-template-columns:100px 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 20px;">
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">status</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;">description</span>
+        </div>
+        <div style="display:grid;grid-template-columns:100px 1fr;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.03);">
+          <span style="font-size:12px;color:var(--red);">400</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.55);">Invalid address format — address is not a valid base58 Solana address</span>
+        </div>
+        <div style="display:grid;grid-template-columns:100px 1fr;padding:12px 20px;">
+          <span style="font-size:12px;color:var(--red);">500</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.55);">Analysis failed — internal error or upstream API timeout</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(0,255,136,0.08);padding-top:28px;font-size:10px;color:rgba(255,255,255,0.2);">
+      // no api key required · free tier · powered by helius rpc · <a href="https://github.com/zfu9751-a11y/solana-behavioral-intelligence-api" target="_blank" style="color:rgba(255,255,255,0.2);text-decoration:none;">github →</a>
+    </div>
+
   </div>
 </div>
 
@@ -1146,7 +1285,13 @@ loadImageData('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4QETRXhpZgAATU
     }, 300);
   }
 
-    function resetToHero() {
+    function showDocs() {
+    document.getElementById('three').classList.add('hidden');
+    document.getElementById('bgGrid').classList.add('visible');
+    showScreen('screen-docs','screen-hero','up');
+  }
+
+  function resetToHero() {
     document.getElementById('heroBtn').disabled=false;
     document.getElementById('heroInput').value='';
     document.getElementById('heroError').style.display='none';
