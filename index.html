@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strata BI — Solana Behavioral Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fffef9;
+      --bg2: #f5f4ef;
+      --bg3: #eeede8;
+      --bg4: #e8e7e2;
+      --white: #ffffff;
+      --border: rgba(0,0,0,0.07);
+      --border2: rgba(0,0,0,0.04);
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --green-mid: rgba(22,163,74,0.12);
+      --green-glow: rgba(22,163,74,0.2);
+      --text: #111110;
+      --text2: #6b6b63;
+      --text3: #a8a89e;
+      --accent: #2563eb;
+      --yellow: #b45309;
+      --red: #dc2626;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: var(--bg); font-family: var(--font); color: var(--text); overflow: hidden; }
+
+    /* ══ LAYOUT ══ */
+    .app { display: flex; height: 100vh; }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+      z-index: 10;
+    }
+    .sidebar.collapsed { width: 56px; }
+
+    .sidebar-header {
+      padding: 14px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      height: 56px;
+      flex-shrink: 0;
+    }
+    .sidebar-logo { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--green);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: #fff;
+      font-family: var(--mono); flex-shrink: 0;
+      box-shadow: 0 2px 8px var(--green-glow);
+    }
+    .logo-text {
+      font-size: 15px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.02em; white-space: nowrap;
+      transition: opacity 0.2s, width 0.2s;
+    }
+    .sidebar.collapsed .logo-text { opacity: 0; width: 0; }
+
+    .sidebar-toggle {
+      background: none; border: none; color: var(--text3);
+      cursor: pointer; padding: 6px; border-radius: 8px;
+      transition: all 0.15s; flex-shrink: 0; display: flex;
+    }
+    .sidebar-toggle:hover { background: var(--bg3); color: var(--text); }
+
+    .sidebar-new {
+      margin: 10px;
+      padding: 9px 12px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--font); font-size: 13px; font-weight: 500;
+      color: var(--text2); cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.15s; white-space: nowrap; overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .sidebar-new:hover { background: var(--bg); color: var(--text); border-color: var(--green); }
+    .sidebar.collapsed .sidebar-new { justify-content: center; padding: 9px; }
+    .sidebar.collapsed .sidebar-new span { display: none; }
+
+    .sidebar-label {
+      padding: 12px 14px 4px;
+      font-size: 10px; color: var(--text3);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      white-space: nowrap; transition: opacity 0.2s;
+    }
+    .sidebar.collapsed .sidebar-label { opacity: 0; }
+
+    .sidebar-history { flex: 1; overflow-y: auto; padding: 4px 8px; }
+    .sidebar-history::-webkit-scrollbar { width: 3px; }
+    .sidebar-history::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+    .hist-item {
+      padding: 8px 10px; border-radius: 9px;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: background 0.12s; overflow: hidden;
+    }
+    .hist-item:hover { background: var(--bg3); }
+    .hist-item.active { background: var(--green-light); }
+    .hist-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; opacity: 0.7; }
+    .hist-addr { font-family: var(--mono); font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar.collapsed .hist-addr { display: none; }
+
+    .sidebar-footer {
+      padding: 10px 8px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    .sf-link {
+      padding: 8px 10px; border-radius: 9px;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text3); text-decoration: none; font-size: 13px;
+      transition: all 0.12s; white-space: nowrap; overflow: hidden;
+    }
+    .sf-link:hover { background: var(--bg3); color: var(--text2); }
+    .sf-link svg { flex-shrink: 0; }
+    .sidebar.collapsed .sf-link span { display: none; }
+
+    /* ══ MAIN ══ */
+    .main {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; background: var(--bg);
+    }
+
+    .chat-topbar {
+      height: 56px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px;
+      flex-shrink: 0; background: var(--bg);
+      font-size: 13px; color: var(--text3); font-family: var(--mono);
+    }
+    .chat-topbar span { color: var(--green); font-weight: 500; }
+
+    .chat-body {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    .chat-body::-webkit-scrollbar { width: 4px; }
+    .chat-body::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+    /* Empty state */
+    .chat-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; padding: 48px 24px; text-align: center;
+    }
+    .empty-icon {
+      width: 52px; height: 52px;
+      background: var(--green-light);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--green);
+      box-shadow: 0 2px 12px var(--green-mid);
+    }
+    .empty-title { font-size: 24px; font-weight: 600; color: var(--text); letter-spacing: -0.03em; }
+    .empty-sub { font-size: 14px; color: var(--text2); max-width: 380px; line-height: 1.65; }
+    .hint-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+    .hint-chip {
+      padding: 7px 14px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 12px; color: var(--text2);
+      cursor: pointer; font-family: var(--mono);
+      transition: all 0.15s; box-shadow: var(--shadow);
+    }
+    .hint-chip:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+    /* Messages */
+    .chat-messages {
+      width: 100%; max-width: 720px;
+      margin: 0 auto; padding: 32px 24px;
+      display: flex; flex-direction: column; gap: 28px;
+    }
+
+    .msg { display: flex; flex-direction: column; gap: 6px; animation: msgIn 0.3s ease both; }
+    @keyframes msgIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .msg-user { align-items: flex-end; }
+    .user-bubble {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 18px 18px 5px 18px;
+      padding: 10px 16px;
+      font-family: var(--mono); font-size: 13px; color: var(--text);
+      max-width: 500px; word-break: break-all;
+      box-shadow: var(--shadow);
+    }
+
+    .msg-ai { align-items: flex-start; }
+
+    /* ══ WORKFLOW BLOCK ══ */
+    .workflow-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      width: 100%;
+    }
+
+    .wf-header {
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; user-select: none;
+      transition: background 0.12s;
+      border-bottom: 1px solid transparent;
+    }
+    .wf-header:hover { background: var(--bg2); }
+    .workflow-block.expanded .wf-header { border-bottom-color: var(--border); }
+
+    .wf-pulse {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; position: relative;
+    }
+    .wf-pulse::before {
+      content: '';
+      position: absolute; inset: -3px;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      animation: wfPulse 1.2s ease infinite;
+      opacity: 0;
+    }
+    @keyframes wfPulse { 0%{opacity:0.8;transform:scale(0.8)} 100%{opacity:0;transform:scale(1.6)} }
+    .wf-pulse.done { background: var(--green-light); }
+    .wf-pulse.done::before { display: none; }
+    .wf-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .wf-pulse.running .wf-dot { animation: dotBlink 0.9s ease infinite; }
+    @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .wf-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+    .wf-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+    .wf-chevron { color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
+    .workflow-block.expanded .wf-chevron { transform: rotate(180deg); }
+
+    /* Steps container */
+    .wf-steps { display: none; padding: 8px 0 4px; }
+    .workflow-block.expanded .wf-steps { display: block; }
+
+    /* Single step */
+    .wf-step {
+      display: flex; gap: 0;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    /* Timeline line */
+    .wf-step-timeline {
+      display: flex; flex-direction: column;
+      align-items: center;
+      width: 32px; flex-shrink: 0;
+      padding-top: 12px;
+    }
+    .wf-step-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--white);
+      flex-shrink: 0; z-index: 1;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .wf-step-dot.loading {
+      border-color: var(--green);
+      background: var(--green-light);
+      animation: stepDotPulse 1s ease infinite;
+    }
+    @keyframes stepDotPulse { 0%,100%{box-shadow:0 0 0 0 var(--green-glow)} 50%{box-shadow:0 0 0 5px transparent} }
+    .wf-step-dot.done {
+      border-color: var(--green);
+      background: var(--green);
+    }
+    .wf-step-dot.done::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--green);
+      animation: dotCheck 0.25s ease forwards;
+    }
+    @keyframes dotCheck { from{transform:scale(0)} to{transform:scale(1)} }
+
+    .wf-step-line {
+      width: 2px; flex: 1; min-height: 8px;
+      background: var(--border);
+      margin: 3px 0;
+      transition: background 0.4s;
+    }
+    .wf-step-line.filled { background: var(--green); }
+    .wf-step:last-child .wf-step-line { display: none; }
+
+    .wf-step-content {
+      flex: 1; padding: 8px 0 16px 10px;
+      min-width: 0;
+    }
+    .wf-step-title {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 5px;
+    }
+    .wf-check {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px;
+      background: var(--green); border-radius: 50%;
+      opacity: 0; transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+    .wf-check.show { opacity: 1; transform: scale(1); }
+
+    .wf-step-detail {
+      font-size: 12px; color: var(--text2);
+      font-family: var(--mono); line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .wf-step-detail .val { color: var(--green); font-weight: 500; }
+    .wf-step-detail .muted { color: var(--text3); }
+
+    /* Progress bar per step */
+    .wf-progress {
+      height: 3px; background: var(--bg3);
+      border-radius: 2px; overflow: hidden; margin-top: 6px;
+    }
+    .wf-progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--green), #4ade80);
+      border-radius: 2px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+      position: relative; overflow: hidden;
+    }
+    .wf-progress-fill::after {
+      content: '';
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6));
+      animation: shimmer 1s ease infinite;
+    }
+    @keyframes shimmer { 0%{transform:translateX(-40px)} 100%{transform:translateX(40px)} }
+
+    /* More steps toggle */
+    .wf-more {
+      margin: 4px 16px 12px;
+      padding: 7px 12px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px; color: var(--text2);
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: all 0.15s; font-family: var(--mono);
+    }
+    .wf-more:hover { background: var(--bg3); color: var(--text); }
+
+    /* AI text */
+    .ai-text {
+      font-size: 14px; line-height: 1.8; color: var(--text);
+      max-width: 100%;
+    }
+    .ai-text strong { color: var(--text); font-weight: 600; }
+    .ai-cursor {
+      display: inline-block; width: 2px; height: 16px;
+      background: var(--green); vertical-align: middle;
+      margin-left: 1px; animation: cur 1s step-end infinite;
+    }
+    @keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ══ INPUT ══ */
+    .chat-input-wrap {
+      flex-shrink: 0;
+      padding: 14px 24px 20px;
+      max-width: 720px; width: 100%; margin: 0 auto;
+    }
+    .input-box {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      display: flex; align-items: flex-end; gap: 10px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow-md);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-box:focus-within {
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px var(--green-mid), var(--shadow-md);
+    }
+    .chat-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-family: var(--mono); font-size: 13px; color: var(--text);
+      resize: none; min-height: 22px; max-height: 120px;
+      line-height: 1.5; caret-color: var(--green);
+    }
+    .chat-input::placeholder { color: var(--text3); }
+    .send-btn {
+      width: 34px; height: 34px;
+      background: var(--green); border: none; border-radius: 9px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: #fff;
+      transition: all 0.15s;
+      box-shadow: 0 2px 6px var(--green-glow);
+    }
+    .send-btn:hover { background: #15803d; transform: translateY(-1px); box-shadow: 0 4px 10px var(--green-glow); }
+    .send-btn:disabled { background: var(--bg3); color: var(--text3); cursor: not-allowed; box-shadow: none; transform: none; }
+    .input-hint { text-align: center; font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 8px; }
+
+    /* ══ RESULT PANEL ══ */
+    .result-panel {
+      width: 0; flex-shrink: 0;
+      background: var(--white);
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.04);
+    }
+    .result-panel.open { width: 400px; }
+    .rp-inner { width: 400px; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+    .rp-header {
+      height: 56px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; flex-shrink: 0;
+    }
+    .rp-title { font-size: 13px; font-weight: 600; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--mono); }
+    .rp-close {
+      background: none; border: none; color: var(--text3);
+      cursor: pointer; padding: 5px; border-radius: 7px; display: flex;
+      transition: all 0.15s;
+    }
+    .rp-close:hover { background: var(--bg2); color: var(--text); }
+
+    .rp-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .rp-body::-webkit-scrollbar { width: 3px; }
+    .rp-body::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+
+    .r-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px;
+      animation: cardIn 0.35s ease both;
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+    .r-card:nth-child(1){animation-delay:0.05s}
+    .r-card:nth-child(2){animation-delay:0.1s}
+    .r-card:nth-child(3){animation-delay:0.15s}
+    .r-card:nth-child(4){animation-delay:0.2s}
+    .r-card:nth-child(5){animation-delay:0.25s}
+
+    .r-label { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--mono); margin-bottom: 10px; }
+
+    .archetype-badge {
+      font-family: var(--mono); font-size: 18px; font-weight: 600;
+      color: var(--green); letter-spacing: -0.01em; margin-bottom: 6px;
+    }
+    .archetype-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+    .risk-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .risk-num { font-size: 52px; font-weight: 700; font-family: var(--mono); line-height: 1; letter-spacing: -0.04em; }
+    .risk-right { flex: 1; }
+    .risk-badge {
+      display: inline-block; font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+      border: 1.5px solid; font-family: var(--mono); margin-bottom: 8px;
+    }
+    .risk-bar-bg { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+    .risk-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+
+    .pat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+    .pat-row:last-child { margin-bottom: 0; }
+    .pat-name { font-size: 12px; color: var(--text2); font-family: var(--mono); min-width: 130px; }
+    .pat-bar-bg { flex: 1; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+    .pat-bar-fill { height: 100%; background: var(--green); border-radius: 2px; width: 0%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+    .pat-pct { font-size: 11px; color: var(--green); font-family: var(--mono); width: 34px; text-align: right; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-item { background: var(--white); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; }
+    .stat-k { font-size: 10px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .stat-v { font-size: 17px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+    .stat-v.green { color: var(--green); }
+
+    .token-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .t-chip {
+      font-size: 11px; font-family: var(--mono); padding: 3px 9px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; color: var(--accent);
+    }
+
+    .wallet-display {
+      font-family: var(--mono); font-size: 11px; color: var(--text2);
+      word-break: break-all; line-height: 1.6;
+      padding: 9px 12px; background: var(--white);
+      border: 1px solid var(--border); border-radius: 9px;
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">S</div>
+        <span class="logo-text">Strata BI</span>
+      </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <button class="sidebar-new" onclick="newChat()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      <span>New analysis</span>
+    </button>
+
+    <div class="sidebar-label">Recent</div>
+    <div class="sidebar-history" id="sidebarHistory"></div>
+
+    <div class="sidebar-footer">
+      <a href="https://github.com/zfu9751-a11y/solana-behavioral-intelligence-api" target="_blank" class="sf-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a href="https://twitter.com/StrataBi" target="_blank" class="sf-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span>Twitter</span>
+      </a>
+      <a href="mailto:zfu9751@gmail.com" class="sf-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span>Contact</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="chat-topbar">solana <span>//</span> wallet intelligence</div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="chat-empty" id="chatEmpty">
+        <div class="empty-icon">S</div>
+        <div class="empty-title">Strata BI</div>
+        <div class="empty-sub">Paste any Solana wallet address to decode on-chain behavior — archetype, risk score, and behavioral patterns in seconds.</div>
+        <div class="hint-row">
+          <div class="hint-chip" onclick="useHint('9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM')">Try a whale wallet</div>
+          <div class="hint-chip" onclick="useHint('DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKH')">Try a DeFi wallet</div>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages" style="display:none;"></div>
+    </div>
+
+    <div class="chat-input-wrap">
+      <div class="input-box">
+        <textarea class="chat-input" id="chatInput" rows="1"
+          placeholder="Paste a Solana wallet address..."
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">// powered by helius api · solana mainnet</div>
+    </div>
+  </main>
+
+  <!-- RESULT PANEL -->
+  <aside class="result-panel" id="resultPanel">
+    <div class="rp-inner">
+      <div class="rp-header">
+        <span class="rp-title">Analysis</span>
+        <button class="rp-close" onclick="closeResult()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="rp-body" id="rpBody"></div>
+    </div>
+  </aside>
+
+</div>
+<script>
+const API = 'https://solana-behavioral-intelligence-api-production.up.railway.app';
+const SOL_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+let isAnalyzing = false;
+let chatHistory = [];
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function scrollChat(){ const b=document.getElementById('chatBody'); b.scrollTop=b.scrollHeight; }
+
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+function newChat(){
+  document.getElementById('chatEmpty').style.display='flex';
+  document.getElementById('chatMessages').style.display='none';
+  document.getElementById('chatMessages').innerHTML='';
+  closeResult();
+}
+
+function autoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,120)+'px';
+}
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } }
+function useHint(addr){ document.getElementById('chatInput').value=addr; sendMessage(); }
+
+async function sendMessage(){
+  if(isAnalyzing) return;
+  const inp=document.getElementById('chatInput');
+  const addr=inp.value.trim();
+  if(!addr) return;
+
+  if(!SOL_RE.test(addr)){
+    showError('Invalid Solana address format. Please paste a valid base58 address.');
+    return;
+  }
+
+  inp.value=''; inp.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  isAnalyzing=true;
+
+  document.getElementById('chatEmpty').style.display='none';
+  document.getElementById('chatMessages').style.display='flex';
+
+  appendUserMsg(addr);
+  await runAnalysis(addr);
+
+  document.getElementById('sendBtn').disabled=false;
+  isAnalyzing=false;
+}
+
+function appendUserMsg(addr){
+  const el=document.createElement('div');
+  el.className='msg msg-user';
+  el.innerHTML=`<div class="user-bubble">${addr}</div>`;
+  document.getElementById('chatMessages').appendChild(el);
+  scrollChat();
+}
+
+function showError(msg){
+  const el=document.createElement('div');
+  el.className='msg msg-ai';
+  el.innerHTML=`<div style="font-size:14px;color:var(--red);padding:4px 0">${msg}</div>`;
+  document.getElementById('chatMessages').appendChild(el);
+  scrollChat();
+}
+
+// ── ANALYSIS ──
+async function runAnalysis(addr){
+  const t0=Date.now();
+
+  // Build workflow block
+  const wfBlock=document.createElement('div');
+  wfBlock.className='workflow-block expanded';
+
+  const VISIBLE_STEPS=4;
+  const allSteps=[
+    { id:'s1', title:'Connecting to Helius RPC', detail:null },
+    { id:'s2', title:'Fetching on-chain data', detail:null },
+    { id:'s3', title:'Analyzing transaction history', detail:null },
+    { id:'s4', title:'Detecting behavior patterns', detail:null },
+    { id:'s5', title:'Calculating risk score', detail:null },
+    { id:'s6', title:'Generating summary', detail:null },
+  ];
+
+  wfBlock.innerHTML=`
+    <div class="wf-header" onclick="this.parentElement.classList.toggle('expanded')">
+      <div class="wf-pulse running" id="wfPulse"><div class="wf-dot"></div></div>
+      <span class="wf-title" id="wfTitle">Analyzing wallet...</span>
+      <span class="wf-meta" id="wfMeta"></span>
+      <svg class="wf-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="wf-steps" id="wfSteps"></div>
+  `;
+
+  const aiMsg=document.createElement('div');
+  aiMsg.className='msg msg-ai';
+  const aiBubble=document.createElement('div');
+  aiBubble.style.width='100%';
+  aiBubble.appendChild(wfBlock);
+  aiMsg.appendChild(aiBubble);
+  document.getElementById('chatMessages').appendChild(aiMsg);
+  scrollChat();
+
+  const wfSteps=document.getElementById('wfSteps');
+
+  // render first VISIBLE_STEPS
+  function renderStep(s, idx){
+    const div=document.createElement('div');
+    div.className='wf-step';
+    div.id='step_'+s.id;
+    div.innerHTML=`
+      <div class="wf-step-timeline">
+        <div class="wf-step-dot" id="dot_${s.id}"></div>
+        <div class="wf-step-line" id="line_${s.id}"></div>
+      </div>
+      <div class="wf-step-content">
+        <div class="wf-step-title">
+          <span>${s.title}</span>
+          <div class="wf-check" id="check_${s.id}">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+        </div>
+        <div class="wf-step-detail" id="detail_${s.id}" style="display:none"></div>
+        <div class="wf-progress" id="prog_${s.id}" style="display:none">
+          <div class="wf-progress-fill" id="progfill_${s.id}"></div>
+        </div>
+      </div>`;
+    wfSteps.appendChild(div);
+  }
+
+  // Render visible steps
+  allSteps.slice(0,VISIBLE_STEPS).forEach((s,i)=>renderStep(s,i));
+
+  // Hidden steps container
+  const hiddenCount=allSteps.length-VISIBLE_STEPS;
+  let hiddenShown=false;
+  let moreBtn=null;
+  if(hiddenCount>0){
+    moreBtn=document.createElement('div');
+    moreBtn.className='wf-more';
+    moreBtn.id='wfMore';
+    moreBtn.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg> Show ${hiddenCount} more steps`;
+    moreBtn.onclick=()=>{
+      if(!hiddenShown){
+        allSteps.slice(VISIBLE_STEPS).forEach((s,i)=>renderStep(s,VISIBLE_STEPS+i));
+        moreBtn.style.display='none';
+        hiddenShown=true;
+      }
+    };
+    wfSteps.appendChild(moreBtn);
+  }
+
+  async function activateStep(id){
+    const dot=document.getElementById('dot_'+id);
+    const prog=document.getElementById('prog_'+id);
+    const fill=document.getElementById('progfill_'+id);
+    if(dot){ dot.className='wf-step-dot loading'; }
+    if(prog){ prog.style.display='block'; }
+    scrollChat();
+    await sleep(100);
+    if(fill){ fill.style.width='60%'; }
+    await sleep(400);
+    if(fill){ fill.style.width='85%'; }
+  }
+
+  async function completeStep(id, detailHtml){
+    const dot=document.getElementById('dot_'+id);
+    const check=document.getElementById('check_'+id);
+    const detail=document.getElementById('detail_'+id);
+    const fill=document.getElementById('progfill_'+id);
+    const line=document.getElementById('line_'+id);
+    if(fill){ fill.style.width='100%'; }
+    await sleep(300);
+    if(dot){ dot.className='wf-step-dot done'; }
+    if(check){ check.classList.add('show'); }
+    if(line){ line.classList.add('filled'); }
+    if(detailHtml && detail){
+      detail.style.display='block';
+      detail.innerHTML=detailHtml;
+    }
+    scrollChat();
+  }
+
+  // ── Step 1: Connect
+  await activateStep('s1');
+  let data;
+  try {
+    // Fetch data during step 1-2
+    const fetchPromise=fetch(`${API}/api/v1/solana/wallet/${addr}/analysis`);
+    await sleep(400);
+    await completeStep('s1','<span class="val">Connected</span> · Helius RPC · Solana mainnet');
+
+    // ── Step 2: Fetch
+    await activateStep('s2');
+    const res=await fetchPromise;
+    if(!res.ok) throw new Error(`API error ${res.status}`);
+    data=await res.json();
+    await completeStep('s2',`Fetched <span class="val">${data.portfolio_overview?.token_count??'—'}</span> token holdings · <span class="val">100</span> recent transactions`);
+
+    // ── Step 3: Analyze tx
+    await activateStep('s3');
+    await sleep(500);
+    await completeStep('s3',`Processed transaction history · <span class="val">${data.portfolio_overview?.main_assets?.join(', ')||'—'}</span>`);
+
+    // ── Step 4: Patterns (hidden, show more needed)
+    if(hiddenShown || VISIBLE_STEPS>3){
+      await activateStep('s4');
+      await sleep(400);
+      const pNames=data.behavior_patterns?.map(p=>p.pattern).join(', ')||'none detected';
+      await completeStep('s4',`Detected: <span class="val">${pNames}</span>`);
+    }
+
+    // ── Step 5: Risk
+    if(hiddenShown || VISIBLE_STEPS>4){
+      await activateStep('s5');
+      await sleep(350);
+      const rColor=data.risk_score>=70?'var(--red)':data.risk_score>=40?'var(--yellow)':'var(--green)';
+      await completeStep('s5',`Risk score: <span style="color:${rColor};font-weight:600">${data.risk_score}/100</span>`);
+    }
+
+    // ── Step 6: Summary
+    if(hiddenShown || VISIBLE_STEPS>5){
+      await activateStep('s6');
+      await sleep(250);
+      await completeStep('s6','Summary generated');
+    }
+
+  } catch(err){
+    document.getElementById('wfTitle').textContent='Analysis failed';
+    document.getElementById('wfPulse').classList.remove('running');
+    document.getElementById('wfPulse').style.background='rgba(220,38,38,0.1)';
+    const dot=document.querySelector('.wf-step-dot.loading');
+    if(dot) dot.className='wf-step-dot';
+    wfBlock.classList.remove('expanded');
+
+    const errEl=document.createElement('div');
+    errEl.className='ai-text';
+    errEl.style.color='var(--red)';
+    errEl.textContent=`Failed to analyze wallet: ${err.message}`;
+    aiBubble.appendChild(errEl);
+    scrollChat();
+    return;
+  }
+
+  // Finalize header
+  const elapsed=((Date.now()-t0)/1000).toFixed(1);
+  document.getElementById('wfTitle').textContent='Analysis complete';
+  document.getElementById('wfMeta').textContent=`${elapsed}s`;
+  const pulse=document.getElementById('wfPulse');
+  pulse.classList.remove('running');
+  pulse.classList.add('done');
+  wfBlock.classList.remove('expanded');
+
+  // Show result panel
+  showResultPanel(data, addr);
+  addHistory(addr);
+
+  // Stream AI text
+  await sleep(150);
+  const textEl=document.createElement('div');
+  textEl.className='ai-text';
+  aiBubble.appendChild(textEl);
+  await streamText(textEl, buildSummary(data));
+}
+
+function buildSummary(d){
+  const p=d.portfolio_overview;
+  const sol=p.sol_balance>1000?(p.sol_balance/1000).toFixed(1)+'K':p.sol_balance.toFixed(2);
+  const rLabel=d.risk_score>=70?'high risk':d.risk_score>=40?'medium risk':'low risk';
+  const pats=d.behavior_patterns?.map(p=>p.pattern.toLowerCase()).join(', ')||'no specific patterns detected';
+  return `**${d.archetype}** — ${d.summary}\n\nThis wallet holds **${sol} SOL** across **${p.token_count}** unique assets, with a risk score of **${d.risk_score}/100** (${rLabel}). Primary behavioral signals: ${pats}.\n\nTop assets: ${p.main_assets.join(', ')}.`;
+}
+
+async function streamText(el, text){
+  const cursor=document.createElement('span');
+  cursor.className='ai-cursor';
+  el.appendChild(cursor);
+  let i=0;
+  while(i<text.length){
+    const chunk=text.slice(i,i+4);
+    el.insertBefore(document.createTextNode(chunk),cursor);
+    i+=4;
+    scrollChat();
+    await sleep(16);
+  }
+  cursor.remove();
+  el.innerHTML=el.textContent
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n\n/g,'<br><br>');
+}
+
+// ── RESULT PANEL ──
+function showResultPanel(d, addr){
+  const body=document.getElementById('rpBody');
+  body.innerHTML='';
+  const p=d.portfolio_overview;
+  const rScore=d.risk_score;
+  const rColor=rScore>=70?'var(--red)':rScore>=40?'var(--yellow)':'var(--green)';
+  const rLabel=rScore>=70?'HIGH RISK':rScore>=40?'MEDIUM RISK':'LOW RISK';
+  const sol=p.sol_balance>1000?(p.sol_balance/1000).toFixed(1)+'K':p.sol_balance.toFixed(2);
+
+  body.innerHTML=`
+    <div class="r-card">
+      <div class="r-label">// wallet</div>
+      <div class="wallet-display">${addr}</div>
+    </div>
+    <div class="r-card">
+      <div class="r-label">// archetype</div>
+      <div class="archetype-badge">[ ${d.archetype.toUpperCase()} ]</div>
+      <div class="archetype-desc">${d.summary}</div>
+    </div>
+    <div class="r-card">
+      <div class="r-label">// risk score</div>
+      <div class="risk-row">
+        <div class="risk-num" style="color:${rColor}">${rScore}</div>
+        <div class="risk-right">
+          <div class="risk-badge" style="color:${rColor};border-color:${rColor}">${rLabel}</div>
+          <div class="risk-bar-bg"><div class="risk-bar-fill" id="riskBar" style="background:${rColor}"></div></div>
+        </div>
+      </div>
+    </div>
+    ${d.behavior_patterns?.length?`
+    <div class="r-card">
+      <div class="r-label">// behavior patterns</div>
+      ${d.behavior_patterns.map((pt,i)=>`
+        <div class="pat-row">
+          <span class="pat-name">${pt.pattern}</span>
+          <div class="pat-bar-bg"><div class="pat-bar-fill" id="pb${i}"></div></div>
+          <span class="pat-pct">${Math.round(pt.confidence*100)}%</span>
+        </div>`).join('')}
+    </div>`:''}
+    <div class="r-card">
+      <div class="r-label">// portfolio</div>
+      <div class="stat-grid">
+        <div class="stat-item"><div class="stat-k">SOL Balance</div><div class="stat-v green">${sol}</div></div>
+        <div class="stat-item"><div class="stat-k">Tokens Held</div><div class="stat-v">${p.token_count}</div></div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="r-label">// top assets</div>
+        <div class="token-chips">${p.main_assets.map(t=>`<span class="t-chip">${t}</span>`).join('')}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('resultPanel').classList.add('open');
+  setTimeout(()=>{
+    const rb=document.getElementById('riskBar');
+    if(rb) rb.style.width=rScore+'%';
+    d.behavior_patterns?.forEach((pt,i)=>{
+      const pb=document.getElementById('pb'+i);
+      if(pb) pb.style.width=(pt.confidence*100)+'%';
+    });
+  },150);
+}
+
+function closeResult(){ document.getElementById('resultPanel').classList.remove('open'); }
+
+function addHistory(addr){
+  chatHistory.unshift(addr);
+  const el=document.getElementById('sidebarHistory');
+  el.innerHTML=chatHistory.slice(0,10).map((a,i)=>`
+    <div class="hist-item ${i===0?'active':''}" onclick="useHint('${a}')">
+      <div class="hist-dot"></div>
+      <span class="hist-addr">${a.slice(0,8)}...${a.slice(-6)}</span>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>
